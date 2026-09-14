@@ -1,0 +1,12 @@
+{
+  "lsp": {
+    "clangd": {
+      "binary": {
+        "arguments": [
+          "--compile-commands-dir=build",
+          "--query-driver=C:/Qt/Tools/mingw1310_64/bin/c++.exe"
+        ]
+      }
+    }
+  }
+}

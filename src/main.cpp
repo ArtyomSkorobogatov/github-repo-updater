@@ -1,13 +1,14 @@
 #include <QApplication>
-#include <QMainWindow>
+#include "gui/main_window.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    app.setOrganizationName("GitHubRepoUpdater");
+    app.setApplicationName("GitHubRepoUpdater");
+    app.setQuitOnLastWindowClosed(false);
 
-    QMainWindow window;
-    window.setWindowTitle("GitHub Repo Updater");
-    window.resize(640, 400);
+    MainWindow window;
     window.show();
 
     return app.exec();
