@@ -139,6 +139,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     setCentralWidget(central);
     menuBar()->addMenu(QStringLiteral("Файл"))->addAction(QStringLiteral("Выход"), this, &MainWindow::requestExit);
 
+    auto *helpMenu = menuBar()->addMenu(QStringLiteral("Help"));
+    helpMenu->addAction(QStringLiteral("About"), this, [this] {
+        QMessageBox::information(this, QStringLiteral("About"),
+            windowTitle() + QStringLiteral("\nVersion %1").arg(QStringLiteral(APP_VERSION)));
+    });
+
     tray = new QSystemTrayIcon(windowIcon(), this);
     tray->setToolTip(windowTitle());
     auto *menu = new QMenu(this);

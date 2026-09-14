@@ -33,6 +33,7 @@ target_link_libraries(github-repo-updater
 set_target_properties(github-repo-updater PROPERTIES
     WIN32_EXECUTABLE ON
 )
+target_compile_definitions(github-repo-updater PRIVATE APP_VERSION="${PROJECT_VERSION}")
 
 include(CTest)
 if(BUILD_TESTING)
@@ -62,6 +63,7 @@ if(BUILD_TESTING)
         src/git/repo_updater.cpp
     )
     target_include_directories(gui-tests PRIVATE src)
+    target_compile_definitions(gui-tests PRIVATE APP_VERSION="${PROJECT_VERSION}")
     target_link_libraries(gui-tests PRIVATE Qt6::Widgets Qt6::Test)
     set_target_properties(git-runner-tests repo-updater-tests gui-tests PROPERTIES WIN32_EXECUTABLE OFF)
     add_test(NAME gui COMMAND gui-tests -platform offscreen
