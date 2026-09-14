@@ -1,0 +1,32 @@
+[
+  {
+    "label": "Qt: Configure",
+    "command": "C:\\Qt\\6.11.2\\mingw_64\\bin\\qt-cmake.bat -S . -B build -G Ninja",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "Qt: Build",
+    "command": "cmake --build build",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "Qt: Deploy",
+    "command": "C:\\Qt\\6.11.2\\mingw_64\\bin\\windeployqt.exe .\\build\\github-repo-updater.exe",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "Qt: Run",
+    "command": ".\\build\\github-repo-updater.exe",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "Qt: Build + Run",
+    "command": "cmake --build build; if ($?) { .\\build\\github-repo-updater.exe }",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  }
+]
