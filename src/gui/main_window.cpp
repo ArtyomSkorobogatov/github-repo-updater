@@ -40,7 +40,7 @@ QString statusText(RepoStatus status)
     return {};
 }
 
-QIcon applicationIcon()
+QIcon applicationIcon(int attentionCount = 0)
 {
     QPixmap pixmap(64, 64);
     pixmap.fill(Qt::transparent);
@@ -55,6 +55,19 @@ QIcon applicationIcon()
     painter.setBrush(Qt::white);
     for (const auto &point : {QPoint(23, 18), QPoint(23, 46), QPoint(43, 23)})
         painter.drawEllipse(point, 4, 4);
+    if (attentionCount > 0) {
+        const auto text = attentionCount > 99 ? QStringLiteral("99+") : QString::number(attentionCount);
+        const QRect badge(10, 22, 54, 42);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor("#dc2626"));
+        painter.drawRoundedRect(badge, 12, 12);
+        auto font = QApplication::font();
+        font.setBold(true);
+        font.setPixelSize(attentionCount > 99 ? 25 : 34);
+        painter.setFont(font);
+        painter.setPen(Qt::white);
+        painter.drawText(badge, Qt::AlignCenter, text);
+    }
     return QIcon(pixmap);
 }
 }
@@ -169,6 +182,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     automatic->setChecked(settings.value("automatic", false).toBool());
     restoreGeometry(settings.value("geometry").toByteArray());
     configureTimer();
+    if (automatic->isChecked() && !directory->text().trimmed().isEmpty()) {
+        // Start after construction, once the application's event loop is running.
+        QTimer::singleShot(0, this, [this] {
+            if (automatic->isChecked() && !directory->text().trimmed().isEmpty())
+                startWork(true);
+        });
+    }
 }
 
 MainWindow::~MainWindow()
@@ -193,6 +213,7 @@ void MainWindow::startWork(bool doUpdate)
     updating = doUpdate;
     scanError = false;
     completed = updated = 0;
+    attentionRepositoryCount = 0;
     attention.clear();
     table->setRowCount(0);
     details->clear();
@@ -217,8 +238,10 @@ void MainWindow::startWork(bool doUpdate)
         if (result.status == RepoStatus::Updated)
             ++updated;
         const bool needsAttention = result.status != RepoStatus::Updated && result.status != RepoStatus::UpToDate;
-        if (needsAttention)
+        if (needsAttention) {
+            ++attentionRepositoryCount;
             attention.append(result.repositoryPath + "\n" + result.message);
+        }
         table->item(row, 1)->setText(statusText(result.status));
         table->item(row, 1)->setIcon(style()->standardIcon(result.status == RepoStatus::Error
             ? QStyle::SP_MessageBoxCritical : needsAttention ? QStyle::SP_MessageBoxWarning : QStyle::SP_DialogApplyButton));
@@ -246,6 +269,13 @@ void MainWindow::finishWork()
         return;
     }
     setBusy(false);
+    // Keep the previous result during scans and failed/incomplete discovery.
+    // Discovery errors are not repositories and must not inflate the badge.
+    if (updating && !scanError) {
+        tray->setIcon(applicationIcon(attentionRepositoryCount));
+        tray->setToolTip(windowTitle() + QStringLiteral("\nТребуют внимания: %1\nПоследняя завершённая проверка: ")
+            .arg(attentionRepositoryCount) + QDir::toNativeSeparators(directory->text().trimmed()));
+    }
     if (!scanError) {
         summary->setText(updating
             ? QStringLiteral("Проверено: %1. Обновлено: %2. Требуют внимания: %3.").arg(completed).arg(updated).arg(attention.size())

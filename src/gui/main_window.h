@@ -51,5 +51,6 @@ private:
     bool scanError = false;
     int completed = 0;
     int updated = 0;
+    int attentionRepositoryCount = 0;
     QStringList attention;
 };

@@ -74,6 +74,8 @@ private slots:
         MainWindow window;
         window.show();
         window.findChild<QLineEdit *>("directory")->setText(directory.path());
+        auto *tray = window.findChild<QSystemTrayIcon *>();
+        const auto plainIcon = tray->icon().pixmap(64, 64).toImage();
         auto *update = window.findChild<QPushButton *>("update");
         QTest::mouseClick(update, Qt::LeftButton);
         QVERIFY(!update->isEnabled());
@@ -91,6 +93,29 @@ private slots:
         QVERIFY(popup->detailedText().contains("one"));
         QVERIFY(popup->detailedText().contains("two"));
         popup->close();
+        QVERIFY(tray->toolTip().contains(QStringLiteral("Требуют внимания: 2")));
+        const auto attentionIcon = tray->icon().pixmap(64, 64).toImage();
+        QVERIFY(attentionIcon != plainIcon);
+
+        // A discovery-only pass must not clear known attention results.
+        auto *scan = window.findChild<QPushButton *>("scan");
+        QTest::mouseClick(scan, Qt::LeftButton);
+        QTRY_VERIFY_WITH_TIMEOUT(scan->isEnabled(), 10000);
+        QCOMPARE(tray->icon().pixmap(64, 64).toImage(), attentionIcon);
+
+        window.findChild<QLineEdit *>("directory")->setText(directory.filePath("missing"));
+        QTest::mouseClick(update, Qt::LeftButton);
+        QTRY_VERIFY_WITH_TIMEOUT(update->isEnabled(), 10000);
+        QCOMPARE(tray->icon().pixmap(64, 64).toImage(), attentionIcon);
+        QVERIFY(tray->toolTip().contains(QStringLiteral("Требуют внимания: 2")));
+
+        QTemporaryDir emptyDirectory;
+        QVERIFY(emptyDirectory.isValid());
+        window.findChild<QLineEdit *>("directory")->setText(emptyDirectory.path());
+        QTest::mouseClick(update, Qt::LeftButton);
+        QTRY_VERIFY_WITH_TIMEOUT(update->isEnabled(), 10000);
+        QCOMPARE(tray->icon().pixmap(64, 64).toImage(), plainIcon);
+        QVERIFY(tray->toolTip().contains(QStringLiteral("Требуют внимания: 0")));
     }
 
     void closingKeepsApplicationAccessibleAndTrayRestoresWindow()
@@ -127,6 +152,30 @@ private slots:
         QVERIFY(window.findChild<QCheckBox *>("automatic")->isChecked());
         QCOMPARE(settings.value("automatic").toBool(), true);
         QVERIFY(!window.findChild<UpdateWorker *>());
+        QTRY_VERIFY_WITH_TIMEOUT(window.findChild<QLabel *>("summary")->text().startsWith(QStringLiteral("Проверено: 0.")), 10000);
+        QVERIFY(window.findChild<QPushButton *>("update")->isEnabled());
+    }
+
+    void startupRequiresAutomaticOptionAndSavedPath_data()
+    {
+        QTest::addColumn<bool>("automatic");
+        QTest::addColumn<bool>("hasPath");
+        QTest::newRow("automatic disabled") << false << true;
+        QTest::newRow("no saved directory") << true << false;
+    }
+
+    void startupRequiresAutomaticOptionAndSavedPath()
+    {
+        QFETCH(bool, automatic);
+        QFETCH(bool, hasPath);
+        QSettings settings;
+        settings.setValue("automatic", automatic);
+        settings.setValue("directory", hasPath ? settingsDirectory.path() : QString());
+        MainWindow window;
+        const auto initialSummary = window.findChild<QLabel *>("summary")->text();
+        QCoreApplication::processEvents();
+        QVERIFY(!window.findChild<UpdateWorker *>());
+        QCOMPARE(window.findChild<QLabel *>("summary")->text(), initialSummary);
     }
 };
 
