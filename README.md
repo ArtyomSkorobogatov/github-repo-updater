@@ -66,6 +66,7 @@ cmake --fresh -S . -B build-mingw -G Ninja `
 cmake --build build-mingw
 ```
 
+При первой сборке обязательно нужно выполнить деплой, чтобы динамические библиотеки появились в директории сборки:
 ```shell
 & C:\Qt\6.11.2\mingw_64\bin\windeployqt.exe `
   --release `
