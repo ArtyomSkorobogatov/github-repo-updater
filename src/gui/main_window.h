@@ -38,7 +38,7 @@ private:
     QPushButton *scan;
     QPushButton *update;
     QTableWidget *table;
-    QPlainTextEdit *details;
+    // QPlainTextEdit *details;
     QLabel *summary;
     QCheckBox *automatic;
     QSpinBox *interval;

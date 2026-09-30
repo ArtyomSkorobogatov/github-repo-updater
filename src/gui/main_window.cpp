@@ -42,32 +42,24 @@ QString statusText(RepoStatus status)
 
 QIcon applicationIcon(int attentionCount = 0)
 {
-    QPixmap pixmap(64, 64);
-    pixmap.fill(Qt::transparent);
+    const QIcon baseIcon(QStringLiteral(":/icons/runtime-icon.ico"));
+    if (attentionCount <= 0)
+        return baseIcon;
+
+    QPixmap pixmap = baseIcon.pixmap(64, 64);
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing);
+    const auto text = attentionCount > 99 ? QStringLiteral("99+") : QString::number(attentionCount);
+    const QRect badge(10, 22, 54, 42);
     painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor("#2563eb"));
-    painter.drawRoundedRect(2, 2, 60, 60, 14, 14);
-    painter.setPen(QPen(Qt::white, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    painter.drawLine(23, 18, 23, 46);
-    painter.drawLine(23, 36, 43, 23);
-    painter.setBrush(Qt::white);
-    for (const auto &point : {QPoint(23, 18), QPoint(23, 46), QPoint(43, 23)})
-        painter.drawEllipse(point, 4, 4);
-    if (attentionCount > 0) {
-        const auto text = attentionCount > 99 ? QStringLiteral("99+") : QString::number(attentionCount);
-        const QRect badge(10, 22, 54, 42);
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor("#dc2626"));
-        painter.drawRoundedRect(badge, 12, 12);
-        auto font = QApplication::font();
-        font.setBold(true);
-        font.setPixelSize(attentionCount > 99 ? 25 : 34);
-        painter.setFont(font);
-        painter.setPen(Qt::white);
-        painter.drawText(badge, Qt::AlignCenter, text);
-    }
+    painter.setBrush(QColor("#dc2626"));
+    painter.drawRoundedRect(badge, 12, 12);
+    auto font = QApplication::font();
+    font.setBold(true);
+    font.setPixelSize(attentionCount > 99 ? 25 : 34);
+    painter.setFont(font);
+    painter.setPen(Qt::white);
+    painter.drawText(badge, Qt::AlignCenter, text);
     return QIcon(pixmap);
 }
 }
@@ -87,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     titleFont.setBold(true);
     title->setFont(titleFont);
     layout->addWidget(title);
-    auto *hint = new QLabel(QStringLiteral("Локальная работа сохраняется. Неоднозначные состояния требуют вашего внимания."), this);
+    auto *hint = new QLabel(QStringLiteral("Локальная работа сохраняется. Неоднозначные состояния требуют вашего внимания"), this);
     hint->setWordWrap(true);
     layout->addWidget(hint);
     auto *pathLayout = new QHBoxLayout;
@@ -127,12 +119,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     layout->addWidget(table, 1);
-    details = new QPlainTextEdit(this);
-    details->setReadOnly(true);
-    details->setPlaceholderText(QStringLiteral("Выберите репозиторий, чтобы увидеть подробности."));
-    details->setMaximumHeight(130);
-    layout->addWidget(details);
-    summary = new QLabel(QStringLiteral("Выберите директорию. Поиск включает вложенные папки, но не заходит внутрь репозиториев."), this);
+    // details = new QPlainTextEdit(this);
+    // details->setReadOnly(true);
+    // details->setPlaceholderText(QStringLiteral("Выберите репозиторий, чтобы увидеть подробности."));
+    // details->setMaximumHeight(130);
+    // layout->addWidget(details);
+    summary = new QLabel(QStringLiteral("Выберите директорию. Поиск включает вложенные папки, но не заходит внутрь репозиториев"), this);
     summary->setObjectName("summary");
     summary->setWordWrap(true);
     layout->addWidget(summary);
@@ -177,8 +169,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(interval, &QSpinBox::valueChanged, this, &MainWindow::configureTimer);
     connect(table, &QTableWidget::itemSelectionChanged, this, [this] {
         const auto row = table->currentRow();
-        if (row >= 0 && table->item(row, 2))
-            details->setPlainText(table->item(row, 0)->text() + "\n\n" + table->item(row, 2)->text());
+        // if (row >= 0 && table->item(row, 2))
+        //     details->setPlainText(table->item(row, 0)->text() + "\n\n" + table->item(row, 2)->text());
     });
     QSettings settings;
     const QSignalBlocker blockInterval(interval);
@@ -222,7 +214,7 @@ void MainWindow::startWork(bool doUpdate)
     attentionRepositoryCount = 0;
     attention.clear();
     table->setRowCount(0);
-    details->clear();
+    // details->clear();
     summary->setText(QStringLiteral("Поиск репозиториев…"));
     setBusy(true);
     worker = new UpdateWorker(directory->text().trimmed(), doUpdate, this);
@@ -253,8 +245,8 @@ void MainWindow::startWork(bool doUpdate)
             ? QStyle::SP_MessageBoxCritical : needsAttention ? QStyle::SP_MessageBoxWarning : QStyle::SP_DialogApplyButton));
         table->item(row, 2)->setText(result.message);
         table->item(row, 2)->setToolTip(result.message);
-        if (table->currentRow() == row)
-            details->setPlainText(result.repositoryPath + "\n\n" + result.message);
+        // if (table->currentRow() == row)
+        //     details->setPlainText(result.repositoryPath + "\n\n" + result.message);
     });
     connect(worker, &UpdateWorker::scanFailed, this, [this](const QString &message) {
         scanError = true;
