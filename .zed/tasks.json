@@ -1,32 +1,52 @@
 [
   {
     "label": "Qt: Configure",
-    "command": "C:\\Qt\\6.11.2\\mingw_64\\bin\\qt-cmake.bat -S . -B build -G Ninja",
+    "command": "C:/Qt/6.11.2/mingw_64/bin/qt-cmake.bat",
+    "args": [
+      "--fresh",
+      "-S",
+      ".",
+      "-B",
+      "build",
+      "-G",
+      "Ninja",
+      "-DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingw1310_64/bin/c++.exe",
+      "-DCMAKE_RC_COMPILER=C:/Qt/Tools/mingw1310_64/bin/windres.exe",
+    ],
     "use_new_terminal": false,
-    "allow_concurrent_runs": false
+    "allow_concurrent_runs": false,
   },
   {
     "label": "Qt: Build",
-    "command": "cmake --build build",
+    "command": "cmake",
+    "args": ["--build", "build"],
     "use_new_terminal": false,
-    "allow_concurrent_runs": false
+    "allow_concurrent_runs": false,
   },
   {
     "label": "Qt: Deploy",
-    "command": "C:\\Qt\\6.11.2\\mingw_64\\bin\\windeployqt.exe .\\build\\github-repo-updater.exe",
+    "command": "C:/Qt/6.11.2/mingw_64/bin/windeployqt.exe",
+    "args": ["./build/github-repo-updater.exe"],
     "use_new_terminal": false,
-    "allow_concurrent_runs": false
+    "allow_concurrent_runs": false,
+  },
+  {
+    "label": "Qt: Test",
+    "command": "ctest",
+    "args": ["--test-dir", "build", "--output-on-failure"],
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
   },
   {
     "label": "Qt: Run",
-    "command": ".\\build\\github-repo-updater.exe",
+    "command": "./build/github-repo-updater.exe",
     "use_new_terminal": false,
-    "allow_concurrent_runs": false
+    "allow_concurrent_runs": false,
   },
   {
     "label": "Qt: Build + Run",
-    "command": "cmake --build build; if ($?) { .\\build\\github-repo-updater.exe }",
+    "command": "cmake --build build; if ($?) { ./build/github-repo-updater.exe }",
     "use_new_terminal": false,
-    "allow_concurrent_runs": false
-  }
+    "allow_concurrent_runs": false,
+  },
 ]

@@ -51,33 +51,14 @@ detached HEAD и неоднозначные состояния приводят 
 транзакцию между несколькими процессами; параллельная запись в тот же репозиторий
 другими программами не поддерживается.
 
-Сборка и тесты (Qt 6, CMake, Git доступны в окружении):
+Для конфигурации, сборки и тестов предазначены Zed-задачи (Ctrl+Shift+P):
 
-```shell
-cmake --fresh -S . -B build-mingw -G Ninja `
-  -DCMAKE_MAKE_PROGRAM=C:/Qt/Tools/Ninja/ninja.exe `
-  -DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingw1310_64/bin/c++.exe `
-  -DCMAKE_RC_COMPILER:FILEPATH=C:/Qt/Tools/mingw1310_64/bin/windres.exe `
-  -DCMAKE_PREFIX_PATH=C:/Qt/6.11.2/mingw_64 `
-  -DCMAKE_BUILD_TYPE=Release
-```
-
-```shell
-cmake --build build-mingw
-```
-
-При первой сборке обязательно нужно выполнить деплой, чтобы динамические библиотеки появились в директории сборки:
-```shell
-& C:\Qt\6.11.2\mingw_64\bin\windeployqt.exe `
-  --release `
-  --compiler-runtime `
-  --no-translations `
-  build-mingw\github-repo-updater.exe
-```
-
-```shell
-ctest --test-dir build --output-on-failure
-```
+- Qt: Configure - конфигурация проекта
+- Qt: Build - сборка проекта
+- Qt: Deploy - необходимо однократно выполнить для добавления зависимостей в build
+- Qt: Build+Run - сборка и запуск приложения
+- Qt: Run - запуск приложения
+- Qt: Test - тестирование собранного приложения
 
 Тесты создают локальные временные репозитории и bare remote; пользовательские
 репозитории и сетевые remote не обновляются.
