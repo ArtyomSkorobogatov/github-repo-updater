@@ -1,1 +1,5 @@
 /build
+/build-mingw
+/dist
+/__cmake_systeminformation
+.cache

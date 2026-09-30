@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 project(github-repo-updater
-    VERSION 0.1.0
+    VERSION 0.1.1
     LANGUAGES CXX
 )
 
@@ -26,6 +26,12 @@ qt_add_executable(github-repo-updater
     src/git/repo_updater.h
 )
 
+qt_add_resources(github-repo-updater app_icons
+    PREFIX "/icons"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+    FILES resources/runtime-icon.ico
+)
+
 target_link_libraries(github-repo-updater
     PRIVATE Qt6::Widgets
 )
@@ -33,6 +39,13 @@ target_link_libraries(github-repo-updater
 set_target_properties(github-repo-updater PROPERTIES
     WIN32_EXECUTABLE ON
 )
+
+if(WIN32)
+    target_sources(github-repo-updater PRIVATE resources/app.rc)
+    set_property(SOURCE resources/app.rc PROPERTY
+        OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/resources/runtime-icon.ico"
+    )
+endif()
 target_compile_definitions(github-repo-updater PRIVATE APP_VERSION="${PROJECT_VERSION}")
 
 include(CTest)
@@ -61,6 +74,11 @@ if(BUILD_TESTING)
         src/gui/update_worker.h
         src/git/git_runner.cpp
         src/git/repo_updater.cpp
+    )
+    qt_add_resources(gui-tests test_app_icons
+        PREFIX "/icons"
+        BASE "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+        FILES resources/runtime-icon.ico
     )
     target_include_directories(gui-tests PRIVATE src)
     target_compile_definitions(gui-tests PRIVATE APP_VERSION="${PROJECT_VERSION}")
