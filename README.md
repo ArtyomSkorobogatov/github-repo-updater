@@ -53,9 +53,28 @@ detached HEAD и неоднозначные состояния приводят 
 
 Сборка и тесты (Qt 6, CMake, Git доступны в окружении):
 
-```sh
-cmake -S . -B build
-cmake --build build
+```shell
+cmake --fresh -S . -B build-mingw -G Ninja `
+  -DCMAKE_MAKE_PROGRAM=C:/Qt/Tools/Ninja/ninja.exe `
+  -DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingw1310_64/bin/c++.exe `
+  -DCMAKE_RC_COMPILER:FILEPATH=C:/Qt/Tools/mingw1310_64/bin/windres.exe `
+  -DCMAKE_PREFIX_PATH=C:/Qt/6.11.2/mingw_64 `
+  -DCMAKE_BUILD_TYPE=Release
+```
+
+```shell
+cmake --build build-mingw
+```
+
+```shell
+& C:\Qt\6.11.2\mingw_64\bin\windeployqt.exe `
+  --release `
+  --compiler-runtime `
+  --no-translations `
+  build-mingw\github-repo-updater.exe
+```
+
+```shell
 ctest --test-dir build --output-on-failure
 ```
 
